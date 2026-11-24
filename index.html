@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NDR 負微分電阻與積體電路應用知識庫 | Karpathy LLM Wiki</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-paper: #F4F2EC;
+      --bg-card: #FAF8F4;
+      --bg-subtle: #EAE6DC;
+      --ink-primary: #1C1E1D;
+      --ink-secondary: #525651;
+      --ink-muted: #7C807A;
+      --sage-main: #6B8270;
+      --sage-dark: #475C4C;
+      --sage-tint: #E4ECE5;
+      --editorial-red: #B84A39;
+      --editorial-red-tint: #F5E6E3;
+      --border-hairline: #D5D0C5;
+      --border-strong: #2C302D;
+      --font-serif: 'Noto Serif TC', Georgia, serif;
+      --font-sans: 'Noto Sans TC', 'Microsoft JhengHei', -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: var(--bg-paper);
+      color: var(--ink-primary);
+      font-family: var(--font-sans);
+      line-height: 1.75;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Editorial Top Masthead */
+    .masthead {
+      border-bottom: 1px solid var(--border-strong);
+      background: var(--bg-paper);
+      padding: 28px 48px 24px;
+    }
+    .masthead-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-secondary);
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-hairline);
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .badge-sage {
+      display: inline-block;
+      background: var(--sage-tint);
+      color: var(--sage-dark);
+      border: 1px solid var(--sage-main);
+      padding: 2px 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .badge-red {
+      display: inline-block;
+      background: var(--editorial-red-tint);
+      color: var(--editorial-red);
+      border: 1px solid var(--editorial-red);
+      padding: 2px 8px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .badge-mono {
+      display: inline-block;
+      background: var(--bg-subtle);
+      color: var(--ink-primary);
+      border: 1px solid var(--border-hairline);
+      padding: 2px 7px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .masthead-title-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 32px;
+      align-items: end;
+    }
+    .masthead h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(26px, 3.2vw, 40px);
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      color: var(--ink-primary);
+    }
+    .masthead-sub {
+      margin-top: 10px;
+      color: var(--ink-secondary);
+      font-size: 14.5px;
+      max-width: 780px;
+    }
+    .masthead-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-editorial {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 9px 14px;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-card);
+      color: var(--ink-primary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-editorial:hover {
+      background: var(--sage-dark);
+      color: #FAF8F4;
+      border-color: var(--sage-dark);
+    }
+    .btn-editorial.primary {
+      background: var(--sage-dark);
+      color: #FAF8F4;
+      border-color: var(--sage-dark);
+    }
+    .btn-editorial.primary:hover {
+      background: var(--ink-primary);
+      border-color: var(--ink-primary);
+    }
+
+    /* Editorial Navigation Strip */
+    .nav-strip {
+      display: flex;
+      border-bottom: 1px solid var(--border-hairline);
+      background: var(--bg-card);
+      padding: 0 48px;
+      overflow-x: auto;
+    }
+    .nav-strip a {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--ink-secondary);
+      text-decoration: none;
+      padding: 13px 18px;
+      border-right: 1px solid var(--border-hairline);
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-strip a:first-child { border-left: 1px solid var(--border-hairline); }
+    .nav-strip a:hover {
+      background: var(--sage-tint);
+      color: var(--sage-dark);
+    }
+
+    /* Main 2-Column Editorial Layout */
+    .workspace {
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      min-height: calc(100vh - 180px);
+    }
+
+    /* Left Sidebar Index */
+    .sidebar {
+      border-right: 1px solid var(--border-hairline);
+      background: var(--bg-card);
+      padding: 28px 24px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar-label {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+      margin-bottom: 10px;
+      display: block;
+    }
+    .search-box {
+      width: 100%;
+      padding: 9px 11px;
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-paper);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--ink-primary);
+      margin-bottom: 16px;
+      outline: none;
+    }
+    .search-box:focus { border-color: var(--sage-dark); }
+
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-hairline);
+    }
+    .chip {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 4px 8px;
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-paper);
+      color: var(--ink-secondary);
+      cursor: pointer;
+    }
+    .chip.active, .chip:hover {
+      background: var(--sage-dark);
+      color: #FAF8F4;
+      border-color: var(--sage-dark);
+    }
+
+    .wiki-tree { list-style: none; margin-bottom: 26px; }
+    .wiki-tree li { margin-bottom: 4px; }
+    .wiki-tree a {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--ink-primary);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+    }
+    .wiki-tree a:hover {
+      background: var(--bg-paper);
+      border-left-color: var(--sage-main);
+      color: var(--sage-dark);
+    }
+    .wiki-tree span.tag {
+      font-size: 10px;
+      color: var(--ink-muted);
+    }
+
+    .node-status-box {
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-paper);
+      padding: 14px;
+      font-size: 12px;
+    }
+    .node-status-box h4 {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--sage-dark);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .node-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px dashed var(--border-hairline);
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+    .node-row:last-child { border-bottom: none; }
+
+    /* Main Content Column */
+    .main-column {
+      padding: 44px 56px 80px;
+      max-width: 1160px;
+    }
+    .section-block {
+      margin-bottom: 64px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 1px solid var(--border-strong);
+      padding-bottom: 12px;
+      margin-bottom: 26px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .section-num {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--sage-dark);
+      letter-spacing: 0.06em;
+    }
+    .section-header h2 {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--ink-primary);
+    }
+
+    /* 3-Column Editorial Overview Grid */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid var(--border-hairline);
+      border-left: 1px solid var(--border-hairline);
+      background: var(--bg-card);
+    }
+    .grid-3-cell {
+      padding: 24px 22px;
+      border-right: 1px solid var(--border-hairline);
+      border-bottom: 1px solid var(--border-hairline);
+    }
+    .cell-kicker {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--sage-dark);
+      margin-bottom: 8px;
+      display: block;
+    }
+    .grid-3-cell h3 {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+    .grid-3-cell p {
+      font-size: 13.5px;
+      color: var(--ink-secondary);
+      margin-bottom: 14px;
+    }
+
+    /* Interactive NDR Topology Explorer */
+    .explorer-frame {
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-card);
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+    }
+    .explorer-visual {
+      padding: 28px;
+      border-right: 1px solid var(--border-hairline);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .explorer-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .topo-tab {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 7px 12px;
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-paper);
+      cursor: pointer;
+      color: var(--ink-primary);
+    }
+    .topo-tab.active {
+      background: var(--sage-dark);
+      color: #FAF8F4;
+      border-color: var(--sage-dark);
+    }
+    .explorer-info {
+      padding: 28px;
+      background: var(--bg-paper);
+    }
+    .explorer-info h3 {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    .param-list {
+      list-style: none;
+      margin-top: 16px;
+      border-top: 1px solid var(--border-hairline);
+    }
+    .param-list li {
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border-hairline);
+      font-size: 13.5px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .param-list strong {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--sage-dark);
+      white-space: nowrap;
+    }
+
+    /* Thesis Wiki Articles */
+    .wiki-article {
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-card);
+      margin-bottom: 28px;
+      transition: border-color 0.15s;
+    }
+    .wiki-article:hover { border-color: var(--sage-main); }
+    .article-top {
+      padding: 22px 26px;
+      border-bottom: 1px solid var(--border-hairline);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .article-top h3 {
+      font-family: var(--font-serif);
+      font-size: 21px;
+      margin: 6px 0;
+    }
+    .article-meta {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--ink-secondary);
+    }
+    .article-body {
+      padding: 24px 26px;
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 28px;
+    }
+    .article-body h4 {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--sage-dark);
+      margin-bottom: 10px;
+    }
+    .article-body ul {
+      padding-left: 18px;
+      color: var(--ink-primary);
+      font-size: 14px;
+    }
+    .article-body li { margin-bottom: 8px; }
+    .chip-card {
+      background: var(--bg-paper);
+      border: 1px solid var(--border-hairline);
+      padding: 16px;
+    }
+    .chip-item {
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--border-hairline);
+      font-size: 13px;
+    }
+    .chip-item:last-child { border-bottom: none; }
+
+    /* Editorial Comparison Table */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-card);
+    }
+    table.editorial-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    table.editorial-table th {
+      background: var(--bg-subtle);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      text-align: left;
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--border-strong);
+      border-right: 1px solid var(--border-hairline);
+      color: var(--ink-primary);
+    }
+    table.editorial-table td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--border-hairline);
+      border-right: 1px solid var(--border-hairline);
+      vertical-align: top;
+    }
+    table.editorial-table tr:hover td { background: var(--bg-paper); }
+
+    /* Items 4-6 Linkage Hub */
+    .linkage-box {
+      border: 1px solid var(--border-strong);
+      background: var(--bg-card);
+    }
+    .linkage-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-strong);
+      background: var(--bg-subtle);
+      flex-wrap: wrap;
+    }
+    .link-tab {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 13px 20px;
+      border: none;
+      border-right: 1px solid var(--border-hairline);
+      background: transparent;
+      cursor: pointer;
+      color: var(--ink-secondary);
+      font-weight: 500;
+    }
+    .link-tab.active {
+      background: var(--bg-card);
+      color: var(--sage-dark);
+      box-shadow: inset 0 3px 0 var(--sage-dark);
+    }
+    .link-panel {
+      display: none;
+      padding: 28px;
+    }
+    .link-panel.active { display: block; }
+
+    .reflection-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+    .reflection-card {
+      border: 1px solid var(--border-hairline);
+      background: var(--bg-paper);
+      padding: 18px 20px;
+    }
+    .reflection-card h4 {
+      font-family: var(--font-serif);
+      font-size: 16px;
+      margin: 8px 0;
+    }
+    .reflection-card p {
+      font-size: 13.5px;
+      color: var(--ink-secondary);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--ink-primary);
+      color: #FAF8F4;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 12px 18px;
+      border-left: 4px solid var(--sage-main);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 999;
+    }
+    .toast.show { opacity: 1; }
+
+    @media (max-width: 980px) {
+      .workspace { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border-hairline); }
+      .main-column { padding: 28px 22px 60px; }
+      .masthead { padding: 22px; }
+      .nav-strip { padding: 0 22px; }
+      .grid-3, .explorer-frame, .article-body, .reflection-grid { grid-template-columns: 1fr; }
+      .explorer-visual { border-right: none; border-bottom: 1px solid var(--border-hairline); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Editorial Masthead -->
+  <header class="masthead">
+    <div class="masthead-meta">
+      <div>
+        <span class="badge-sage">ITEM 02 // GITHUB LLM WIKI</span>
+        <span style="margin-left:10px;">KARPATHY WIKI ARCHITECTURE · TSMC 0.18 µm CMOS / BiCMOS</span>
+      </div>
+      <div>NCYU EE · PROF. KWANG-JOW GAN LAB (2021–2025)</div>
+    </div>
+    <div class="masthead-title-row">
+      <div>
+        <h1>負微分電阻（NDR）等效電路與積體電路應用知識庫</h1>
+        <p class="masthead-sub">
+          彙整國立嘉義大學電機工程學系甘廣宙教授指導之三篇碩士論文（郭峻偉 2021、楊鎮瑜 2023、王振哲 2025），
+          系統化建構從標準矽製程 NDR 等效元件、MHz/GHz 壓控振盪器、多值記憶器到 MOBILE / MTTG 多工邏輯電路的結構化 Wiki，並預留第 4～6 項雙層自動化流程、稽核紀錄與節點反思連動介面。
+        </p>
+      </div>
+      <div class="masthead-actions">
+        <button class="btn-editorial primary" onclick="copyGitHubSource()">複製 GitHub HTML 原始碼</button>
+        <a class="btn-editorial" href="#nodes-linkage">檢視第 4–6 項連動節點 ↓</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Section Navigation Strip -->
+  <nav class="nav-strip">
+    <a href="#overview">01 // 演進總覽</a>
+    <a href="#topology-explorer">02 // NDR 拓撲與 I-V 曲線圖鑑</a>
+    <a href="#wiki-entries">03 // 三篇論文深度條目</a>
+    <a href="#synthesis-matrix">04 // 跨文獻參數總對比</a>
+    <a href="#nodes-linkage">05 // 第 4～6 項節點連動區</a>
+  </nav>
+
+  <div class="workspace">
+    <!-- Left Editorial Sidebar -->
+    <aside class="sidebar">
+      <span class="sidebar-label">WIKI SEARCH & FILTER</span>
+      <input type="text" id="wikiSearch" class="search-box" placeholder="搜尋晶片編號、VCO、MOBILE、MTTG..." onkeyup="filterArticles()" />
+
+      <div class="filter-chips">
+        <button class="chip active" onclick="setFilter('all', this)">ALL (3)</button>
+        <button class="chip" onclick="setFilter('2021', this)">2021 郭峻偉</button>
+        <button class="chip" onclick="setFilter('2023', this)">2023 楊鎮瑜</button>
+        <button class="chip" onclick="setFilter('2025', this)">2025 王振哲</button>
+        <button class="chip" onclick="setFilter('vco', this)">VCO 振盪器</button>
+        <button class="chip" onclick="setFilter('logic', this)">MOBILE/MTTG</button>
+      </div>
+
+      <span class="sidebar-label">KARPATHY WIKI INDEX</span>
+      <ul class="wiki-tree">
+        <li><a href="#overview"><span>00_overview.md</span><span class="tag">SYNTHESIS</span></a></li>
+        <li><a href="#topology-explorer"><span>01_ndr_devices.md</span><span class="tag">Λ / N / S</span></a></li>
+        <li><a href="#entry-2021"><span>02_kuo_2021_vco.md</span><span class="tag">RAW→WIKI</span></a></li>
+        <li><a href="#entry-2023"><span>03_yang_2023_mvm.md</span><span class="tag">RAW→WIKI</span></a></li>
+        <li><a href="#entry-2025"><span>04_wang_2025_mttg.md</span><span class="tag">RAW→WIKI</span></a></li>
+        <li><a href="#synthesis-matrix"><span>05_cross_matrix.md</span><span class="tag">COMPARE</span></a></li>
+        <li><a href="#nodes-linkage"><span>06_pipeline_hooks.md</span><span class="tag">NODE 4–6</span></a></li>
+      </ul>
+
+      <div class="node-status-box">
+        <h4>Pipeline Linkage Status</h4>
+        <div class="node-row"><span>[ITEM-02] GitHub Wiki</span><span style="color:var(--sage-dark);">ACTIVE</span></div>
+        <div class="node-row"><span>[ITEM-03] HTML Slides</span><span style="color:var(--sage-dark);">SYNCED</span></div>
+        <div class="node-row"><span>[ITEM-04] Dual Pipeline</span><span style="color:var(--sage-dark);">HOOKED</span></div>
+        <div class="node-row"><span>[ITEM-05] Audit Log</span><span style="color:var(--sage-dark);">6 CHIPS</span></div>
+        <div class="node-row"><span>[ITEM-06] Node Reflection</span><span style="color:var(--editorial-red);">4 NOTES</span></div>
+      </div>
+    </aside>
+
+    <!-- Main Editorial Column -->
+    <main class="main-column">
+
+      <!-- Section 01: Evolution Overview -->
+      <section id="overview" class="section-block" data-node="NODE-04-SYNTHESIS">
+        <div class="section-header">
+          <div>
+            <span class="section-num">SECTION 01 // RESEARCH TRAJECTORY (2021 — 2025)</span>
+            <h2>甘廣宙教授實驗室 NDR 積體電路研究演進脈絡</h2>
+          </div>
+          <span class="badge-mono">TSMC 0.18 µm CMOS / BiCMOS</span>
+        </div>
+
+        <div class="grid-3">
+          <div class="grid-3-cell">
+            <span class="cell-kicker">STAGE 01 · 2021.01 · 郭峻偉</span>
+            <h3>從共振穿隧二極體到矽製程 NDR 與 LC 壓控振盪器</h3>
+            <p>
+              解決傳統 III-V 族 RTD 與標準矽製程不相容之問題，提出 BJT+電阻（N 型）與純 NMOS（Λ 型 3 顆、N 型 5 顆）等效 NDR 電路。結合 LC 諧振腔與變容二極體（1SV149）抵銷寄生電阻損耗，實現正向與負向頻率調變之 MHz 級 VCO 與動態除頻器。
+            </p>
+            <span class="badge-sage">下線晶片：T18-108D-E0012</span>
+          </div>
+          <div class="grid-3-cell">
+            <span class="cell-kicker">STAGE 02 · 2023.07 · 楊鎮瑜</span>
+            <h3>Λ / N / S 三型 NDR 系統化比較與多值記憶／混沌電路</h3>
+            <p>
+              建立電壓控制型（Λ 型、N 型）與電流控制型（S 型 Type-1/Type-2）之完整 I-V 特性對照。利用五組 NDR 串並聯摺疊特性實現 6 階多值記憶器（含免讀寫開關 $V_{GG}$ 脈衝讀取），並拓展至 MOBILE 全加法器與 Chua's 混沌振盪電路。
+            </p>
+            <span class="badge-sage">下線晶片：T18-111B-E0006 / E0040</span>
+          </div>
+          <div class="grid-3-cell">
+            <span class="cell-kicker">STAGE 03 · 2025.07 · 王振哲</span>
+            <h3>下線失真抑制、高容忍度 MOBILE/MTTG 與 GHz 環形 VCO</h3>
+            <p>
+              透過下線量測揭露峰值電流 $I_P &gt; 0.9	ext{ mA}$ 時的波型失真問題，以增加通道長度 $L$ 與調變 $W_{MN3}$ 取代精密 $V_{GG}$ 控制。實現 50 MHz 正緣觸發 D-FF、雙臨限可重組 MTTG 邏輯閘，並將直流偏壓環形 VCO 推升至 1.075 GHz。
+            </p>
+            <span class="badge-sage">下線晶片：T18-111D-E0060 / 112D</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 02: Interactive NDR Topology Explorer -->
+      <section id="topology-explorer" class="section-block" data-node="NODE-04-TOPOLOGY">
+        <div class="section-header">
+          <div>
+            <span class="section-num">SECTION 02 // INTERACTIVE DEVICE ATLAS</span>
+            <h2>三種負微分電阻（NDR）等效電路拓撲與 I-V 曲線圖鑑</h2>
+          </div>
+          <span class="badge-mono">CLICK TO SWITCH TOPOLOGY</span>
+        </div>
+
+        <div class="explorer-frame">
+          <div class="explorer-visual">
+            <div class="explorer-tabs">
+              <button class="topo-tab active" onclick="selectTopo('lambda', this)">Λ 型 MOS-NDR (3 NMOS)</button>
+              <button class="topo-tab" onclick="selectTopo('ntype', this)">N 型 MOS-NDR (5 NMOS / 3N1P)</button>
+              <button class="topo-tab" onclick="selectTopo('stype', this)">S 型 BJT-NDR (PNP + NPN + 3R)</button>
+            </div>
+            <svg id="ivSvg" viewBox="0 0 460 250" width="100%" height="250" style="background:#FAF8F4; border:1px solid #D5D0C5;">
+              <!-- Axes -->
+              <line x1="48" y1="210" x2="430" y2="210" stroke="#1C1E1D" stroke-width="1.5"/>
+              <line x1="48" y1="210" x2="48" y2="22" stroke="#1C1E1D" stroke-width="1.5"/>
+              <text id="xAxisLabel" x="395" y="232" font-family="JetBrains Mono" font-size="11" fill="#1C1E1D">V (V)</text>
+              <text id="yAxisLabel" x="14" y="32" font-family="JetBrains Mono" font-size="11" fill="#1C1E1D">I (mA)</text>
+              <!-- NDR Highlight Zone -->
+              <rect id="ndrZone" x="145" y="35" width="120" height="175" fill="#E4ECE5" opacity="0.75"/>
+              <text id="ndrZoneLabel" x="163" y="52" font-family="JetBrains Mono" font-size="10.5" fill="#475C4C">NDR REGION (dI/dV &lt; 0)</text>
+              <!-- Characteristic Curve -->
+              <path id="ivPath" d="M 48 210 Q 105 45, 145 55 C 185 65, 225 195, 265 202 L 410 205" fill="none" stroke="#475C4C" stroke-width="3"/>
+              <!-- Peak & Valley Markers -->
+              <circle id="peakDot" cx="145" cy="55" r="4.5" fill="#B84A39"/>
+              <text id="peakText" x="120" y="42" font-family="JetBrains Mono" font-size="10.5" fill="#B84A39">Peak (Vp, Ip)</text>
+              <circle id="valleyDot" cx="265" cy="202" r="4.5" fill="#1C1E1D"/>
+              <text id="valleyText" x="272" y="196" font-family="JetBrains Mono" font-size="10.5" fill="#1C1E1D">Valley (Vv, Iv)</text>
+            </svg>
+            <div style="font-family:var(--font-mono); font-size:11px; color:var(--ink-muted); margin-top:10px;">
+              * 圖示為標準化 I-V 特性曲線示意；負微分電阻區間可抵銷 LC 寄生損耗或形成雙穩態負載線交點。
+            </div>
+          </div>
+
+          <div class="explorer-info" id="topoDetails">
+            <span class="badge-sage">VOLTAGE-CONTROLLED // Λ-TYPE</span>
+            <h3 style="margin-top:10px;">Λ 型 MOS-NDR（三顆 NMOS 架構）</h3>
+            <p style="font-size:13.5px; color:var(--ink-secondary); margin-top:8px;">
+              由 MN1、MN2 與 MN3 三顆 NMOS 構成，無需電阻即可在標準 CMOS 製程實現。當輸入電壓超過峰值電壓 $V_P$ 後，回授電晶體導通使電流隨電壓上升而驟降至近乎零（谷底電流 $I_V  pprox 0$），具備極高之峰谷電流比（PVCR）。
+            </p>
+            <ul class="param-list">
+              <li><strong>組成元件</strong><span>3 顆 NMOS（MN1, MN2, MN3）+ 偏壓 $V_{GG}$</span></li>
+              <li><strong>關鍵調變參數</strong><span>$W_{MN3}$ 決定峰值電流 $I_P$；通道長度 $L$ 抑制大電流失真</span></li>
+              <li><strong>下線失真警戒線</strong><span>實測 $I_P &gt; 0.9	ext{ mA}$ 時後段負阻區易失真（王振哲 2025）</span></li>
+              <li><strong>主要應用場景</strong><span>MOBILE 邏輯閘、管線式全加法器、50 MHz D-FF、GHz 環形 VCO、MTTG</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 03: Three Thesis Deep-Dive Entries -->
+      <section id="wiki-entries" class="section-block">
+        <div class="section-header">
+          <div>
+            <span class="section-num">SECTION 03 // STRUCTURED WIKI ENTRIES</span>
+            <h2>三篇碩士論文結構化知識條目（Raw Source → Wiki Synthesis）</h2>
+          </div>
+          <span class="badge-mono">3 THESES INDEXED</span>
+        </div>
+
+        <!-- Entry 1: Kuo 2021 -->
+        <article id="entry-2021" class="wiki-article" data-tags="2021 vco">
+          <div class="article-top">
+            <div>
+              <span class="badge-mono">[WIKI-2021-KUO] · NODE-04-P1</span>
+              <h3>《以負微分電阻元件來設計與實現新型壓控振盪器電路》</h3>
+              <div class="article-meta">研究生：郭峻偉（Chun-Wei Kuo） ｜ 指導教授：甘廣宙 博士 ｜ 2021 年 1 月</div>
+            </div>
+            <span class="badge-sage">LC VCO & 動態除頻器</span>
+          </div>
+          <div class="article-body">
+            <div>
+              <h4>核心技術貢獻與電路設計</h4>
+              <ul>
+                <li><strong>雙架構 NDR 等效電路：</strong>提出由兩顆 NPN BJT（2N5551）與四顆電阻組成的 <strong>N 型 R-BJT-NDR</strong>，以及純 NMOS 設計的 <strong>Λ 型（3 NMOS）</strong> 與 <strong>N 型（5 NMOS）MOS-NDR</strong>。</li>
+                <li><strong>正向與負向頻率調變 VCO（搭配變容二極體 1SV149）：</strong>
+                  <br>• <em>R-BJT-NDR VCO：</em>$V_{ctrl}=0.5\sim 6	ext{ V}$，頻率由 <strong>3.375 MHz 上升至 5 MHz</strong>（振幅 3.1–3.4 V）。
+                  <br>• <em>MOS-NDR VCO 架構 1：</em>$V_{ctrl}=0.5\sim 6	ext{ V}$，頻率由 <strong>2.871 MHz 上升至 8.531 MHz</strong>（振幅 1.04–1.16 V）。
+                  <br>• <em>MOS-NDR VCO 架構 2：</em>改變 LC 與 NDR 串並聯拓撲，頻率隨電壓上升反而從 <strong>1.948 MHz 下降至 1.138 MHz</strong>（振幅 0.428–0.636 V），滿足反向調變需求。
+                </li>
+                <li><strong>MOS-NDR 動態除頻器：</strong>將架構 2 的直流偏壓改為正弦波輸入，在 2 MHz～25.6 MHz 輸入頻段下量測到 <strong>週期 1（2.09–3.85 MHz）至週期 8（24.05–24.304 MHz）</strong>、準週期及混沌分岔現象。</li>
+              </ul>
+            </div>
+            <div class="chip-card">
+              <h4>下線晶片與驗證紀錄（NODE-05）</h4>
+              <div class="chip-item">
+                <strong>IC 編號：T18-108D-E0012</strong><br/>
+                製程：TSMC 0.18 µm CMOS Mixed Signal RF General Purpose Standard<br/>
+                名稱：基於 MOS-NDR 電路之除頻器
+              </div>
+              <div class="chip-item">
+                <strong>模擬與量測工具</strong><br/>
+                NI Multisim 14.2（BJT 實體電路）、HSPICE（TSMC 0.18 µm 模型）
+              </div>
+              <div class="chip-item">
+                <strong>文獻衍生發表</strong><br/>
+                2020 工程技術與實務應用研討會（除頻器）、2021 資訊科技與實務研討會（R-BJT-NDR VCO）
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Entry 2: Yang 2023 -->
+        <article id="entry-2023" class="wiki-article" data-tags="2023 vco logic">
+          <div class="article-top">
+            <div>
+              <span class="badge-mono">[WIKI-2023-YANG] · NODE-04-P2</span>
+              <h3>《雙端和三端負微分電阻電路的設計及其應用》</h3>
+              <div class="article-meta">研究生：楊鎮瑜（Chen-Yu Yang） ｜ 指導教授：甘廣宙 博士 ｜ 2023 年 7 月</div>
+            </div>
+            <span class="badge-sage">多值記憶器 / 加法器 / 混沌電路</span>
+          </div>
+          <div class="article-body">
+            <div>
+              <h4>核心技術貢獻與電路設計</h4>
+              <ul>
+                <li><strong>三型 NDR 特性完整對比：</strong>系統性分析電流控制型 <strong>S 型 NDR（Type-1 / Type-2，PNP+NPN+3R）</strong> 與電壓控制型 <strong>Λ 型（3 NMOS）</strong>、<strong>N 型（3 NMOS + 1 PMOS）</strong> 之參數調變機制。</li>
+                <li><strong>五峰值六階多值記憶器：</strong>利用五組 N-NDR 串聯或四組 A-NDR 加一組 N-NDR 並聯產生五個電流峰值，搭配單一電流源、可多重選擇電流源或電阻負載（並首創<strong>免額外讀寫開關之 $V_{GG}$ 脈衝讀取法</strong>），穩定輸出 <strong>6 階電壓態</strong>。</li>
+                <li><strong>MOBILE 全加法器：</strong>以 Λ 型 NDR 結合單穩態-雙穩態傳輸邏輯（MOBILE），由三輸入 Majority 與 XOR 閘構成全加法器。</li>
+                <li><strong>S-NDR 振盪器與 Chua's 混沌電路：</strong>Type-1 S-NDR 並聯電容以輸入電流 $I_S$（1 mA～2.4 mA）線性調變頻率；Type-2 S-NDR 結合電感、電容與電阻仿效 Chua 氏電路，呈現週期倍增與混沌吸引子。</li>
+              </ul>
+            </div>
+            <div class="chip-card">
+              <h4>下線晶片與驗證紀錄（NODE-05）</h4>
+              <div class="chip-item">
+                <strong>IC 編號：T18-111B-E0006</strong><br/>
+                製程：TSMC 0.18 µm CMOS 1P6M 1.8&amp;3.3V<br/>
+                名稱：多峰值負微分電阻電路在多值記憶器上的應用
+              </div>
+              <div class="chip-item">
+                <strong>IC 編號：T18-111D-E0040</strong><br/>
+                製程：TSMC 0.18 µm CMOS 1P6M 1.8&amp;3.3V<br/>
+                名稱：以 MOBILE 理論為基礎之調變 MOS-NDR 電路來設計加法器
+              </div>
+              <div class="chip-item">
+                <strong>關鍵突破</strong><br/>
+                透過摺疊 I-V 特性大幅減少多值記憶體所需電晶體數目。
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Entry 3: Wang 2025 -->
+        <article id="entry-2025" class="wiki-article" data-tags="2025 vco logic">
+          <div class="article-top">
+            <div>
+              <span class="badge-mono">[WIKI-2025-WANG] · NODE-04-P3</span>
+              <h3>《基於負微分電阻電路之多工應用設計: MOBILE 理論與 MTTG 架構實現關鍵邏輯電路》</h3>
+              <div class="article-meta">研究生：王振哲（Chen-Che Wang） ｜ 指導教授：甘廣宙 博士 ｜ 2025 年 7 月</div>
+            </div>
+            <span class="badge-sage">MOBILE / MTTG / GHz Ring VCO</span>
+          </div>
+          <div class="article-body">
+            <div>
+              <h4>核心技術貢獻與電路設計</h4>
+              <ul>
+                <li><strong>下線量測失真修正與 $W_{MN3}$ 設計法：</strong>實測 Λ 型 MOS-NDR 晶片發現 <strong>峰值電流 $I_P &gt; 0.9	ext{ mA}$</strong> 時後段負阻區會明顯失真；驗證增加通道長度 $L$（0.18 → 0.22 / 0.26 µm）可抑制失真，並以<strong>調變 MN3 寬度取代精確調整 $V_{GG}$</strong>，大幅提升電源抗擾度。</li>
+                <li><strong>MOBILE 組合與循序邏輯：</strong>完成二輸入 8 種基本布林邏輯閘、兩種管線式全加法器比較，以及利用自我閂鎖（Self-Latching）特性設計的 <strong>50 MHz 正緣觸發 D 型正反器</strong>（可容忍 $V_{GG}$ 於 1.3 V～1.4 V 變動）。</li>
+                <li><strong>GHz 級環形壓控振盪器（Ring VCO）：</strong>將 MOBILE 反相器之脈衝電源改為直流偏壓 $V_{bias}$ 並三級串接，振盪頻率達 <strong>380 MHz～1075 MHz</strong>；加入 Enable 控制腳位後頻率達 <strong>420 MHz～1070 MHz</strong>，成功突破早期 LC VCO 的 MHz 頻段限制。</li>
+                <li><strong>多重臨限之臨限邏輯閘（MTTG）：</strong>串接額外 NDR 形成雙臨限 $[T_1, T_2]$，透過控制位元 $c$ 動態切換邏輯功能：<strong>BUF/INV $[1,1; 1,2]$</strong>、<strong>OR/NAND $[1,1,2; 1,4]$</strong>、<strong>XOR/NOR $[1,1,1; 1,2]$</strong>。</li>
+              </ul>
+            </div>
+            <div class="chip-card">
+              <h4>下線晶片與驗證紀錄（NODE-05）</h4>
+              <div class="chip-item">
+                <strong>IC 編號：T18-111D-E0060</strong><br/>
+                名稱：以 NMOS 設計之 λ 型 MOS-NDR 負微分電阻參數調變（失真特性驗證）
+              </div>
+              <div class="chip-item">
+                <strong>IC 編號：T18-112D-E0013</strong><br/>
+                名稱：以單穩態-雙穩態傳輸邏輯閘設計由 MOS-NDR 元件所構成之應用電路
+              </div>
+              <div class="chip-item">
+                <strong>IC 編號：T18-112D-E0039</strong><br/>
+                名稱：以 MOBILE 理論設計由 MOS-NDR 元件所構成之二輸入布林邏輯電路
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- Section 04: Cross-Literature Synthesis Matrix -->
+      <section id="synthesis-matrix" class="section-block" data-node="NODE-04-MATRIX">
+        <div class="section-header">
+          <div>
+            <span class="section-num">SECTION 04 // CROSS-LITERATURE SYNTHESIS MATRIX</span>
+            <h2>三篇論文關鍵技術指標與下線晶片總對比表</h2>
+          </div>
+          <span class="badge-mono">UPDATED: 2026.11</span>
+        </div>
+
+        <div class="table-wrap">
+          <table class="editorial-table">
+            <thead>
+              <tr>
+                <th style="width:13%;">年份 / 作者</th>
+                <th style="width:17%;">NDR 核心拓撲</th>
+                <th style="width:20%;">主要實現電路</th>
+                <th style="width:22%;">關鍵操作頻率與效能指標</th>
+                <th style="width:14%;">控制與調變機制</th>
+                <th style="width:14%;">TSRI 下線晶片</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>2021.01</strong><br/>郭峻偉</td>
+                <td>• N 型 R-BJT-NDR<br/>• Λ 型 MOS-NDR (3N)<br/>• N 型 MOS-NDR (5N)</td>
+                <td>• 正向/負向調變 LC VCO<br/>• MOS-NDR 動態除頻器</td>
+                <td>• R-BJT VCO: 3.375–5 MHz<br/>• MOS VCO 1: 2.871–8.531 MHz<br/>• MOS VCO 2: 1.948→1.138 MHz<br/>• 除頻器: 週期 1–8 (2–25.6 MHz)</td>
+                <td>變容二極體 1SV149 逆偏壓 ($0.5\sim 6	ext{ V}$) 與 $V_{GG}$</td>
+                <td><span class="badge-mono">T18-108D-E0012</span></td>
+              </tr>
+              <tr>
+                <td><strong>2023.07</strong><br/>楊鎮瑜</td>
+                <td>• S 型 BJT-NDR (Type 1/2)<br/>• Λ 型 MOS-NDR (3N)<br/>• N 型 MOS-NDR (3N1P)</td>
+                <td>• 五峰值六階多值記憶器<br/>• MOBILE 全加法器<br/>• S-NDR 振盪與混沌電路</td>
+                <td>• 多值記憶器：6 階穩態電壓<br/>• S-NDR 振盪器：$I_S=1\sim 2.4	ext{ mA}$<br/>• Chua's 混沌：週期倍增至混沌</td>
+                <td>NDR 串並聯摺疊、$V_{GG}$ 脈衝無開關讀取、輸入電流 $I_S$</td>
+                <td><span class="badge-mono">T18-111B-E0006</span><br/><span class="badge-mono" style="margin-top:4px;">T18-111D-E0040</span></td>
+              </tr>
+              <tr>
+                <td><strong>2025.07</strong><br/>王振哲</td>
+                <td>• Λ 型 MOS-NDR (3N)<br/>（修正 $I_P &gt; 0.9	ext{ mA}$ 失真）</td>
+                <td>• 8 種 MOBILE 布林邏輯<br/>• 管線式全加法器<br/>• 50 MHz 正緣 D-FF<br/>• 直流偏壓環形 VCO<br/>• 雙臨限 MTTG 多工邏輯</td>
+                <td>• Ring VCO: <strong>380–1075 MHz</strong><br/>• Enable VCO: <strong>420–1070 MHz</strong><br/>• D-FF: 50 MHz ($V_{GG}$ 1.3–1.4 V)<br/>• MTTG: 500 kHz 動態邏輯切換</td>
+                <td>調整 <strong>$W_{MN3}$ 寬度</strong>與通道長度 $L$（取代精密 $V_{GG}$）；$V_{bias}$ 控頻；控制位元 $c$</td>
+                <td><span class="badge-mono">T18-111D-E0060</span><br/><span class="badge-mono" style="margin-top:4px;">T18-112D-E0013</span><br/><span class="badge-mono" style="margin-top:4px;">T18-112D-E0039</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Section 05: Linkage Hub for Items 4 to 6 -->
+      <section id="nodes-linkage" class="section-block">
+        <div class="section-header">
+          <div>
+            <span class="section-num">SECTION 05 // WORKFLOW, AUDIT &amp; REFLECTION HOOKS</span>
+            <h2>第 4～6 項作業節點連動專區（流程圖 · 執行紀錄 · 節點反思）</h2>
+          </div>
+          <span class="badge-sage">INTERACTIVE LINKAGE MODULE</span>
+        </div>
+
+        <div class="linkage-box">
+          <div class="linkage-tabs">
+            <button class="link-tab active" onclick="switchLinkTab('tab-pipeline', this)">第 4 項 // 雙層自動化流程圖 (Pipeline)</button>
+            <button class="link-tab" onclick="switchLinkTab('tab-audit', this)">第 5 項 // 執行稽核紀錄 (Audit Log)</button>
+            <button class="link-tab" onclick="switchLinkTab('tab-reflection', this)">第 6 項 // 節點反思報告 (Node Reflection)</button>
+          </div>
+
+          <!-- Tab 1: Item 4 Double-Layer Pipeline -->
+          <div id="tab-pipeline" class="link-panel active">
+            <p style="font-size:13.5px; color:var(--ink-secondary); margin-bottom:18px;">
+              本區預留與<strong>第 4 項（雙層自動化流程圖）</strong>的結構化節點對應：Layer 1 負責三篇原始 PDF 碩士論文的逐篇實體與電路參數萃取；Layer 2 執行跨年度文獻綜整，並同步驅動本頁（第 2 項 GitHub Wiki）與教學簡報（第 3 項 HTML Slides）。
+            </p>
+            <svg viewBox="0 0 880 260" width="100%" style="background:#FAF8F4; border:1px solid #D5D0C5;">
+              <!-- Layer 1 Box -->
+              <rect x="20" y="20" width="260" height="220" fill="#F4F2EC" stroke="#475C4C" stroke-width="1.5"/>
+              <text x="34" y="42" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#475C4C">LAYER 1 // 單篇論文萃取節點</text>
+              <rect x="34" y="58" width="232" height="46" fill="#FAF8F4" stroke="#D5D0C5"/>
+              <text x="44" y="77" font-family="JetBrains Mono" font-size="11" fill="#1C1E1D">[NODE-04-P1] 郭峻偉 (2021)</text>
+              <text x="44" y="94" font-family="Noto Sans TC" font-size="11" fill="#525651">萃取 LC VCO 正/負調變與除頻器</text>
+
+              <rect x="34" y="116" width="232" height="46" fill="#FAF8F4" stroke="#D5D0C5"/>
+              <text x="44" y="135" font-family="JetBrains Mono" font-size="11" fill="#1C1E1D">[NODE-04-P2] 楊鎮瑜 (2023)</text>
+              <text x="44" y="152" font-family="Noto Sans TC" font-size="11" fill="#525651">萃取 Λ/N/S 三型 NDR 與多值記憶</text>
+
+              <rect x="34" y="174" width="232" height="46" fill="#FAF8F4" stroke="#D5D0C5"/>
+              <text x="44" y="193" font-family="JetBrains Mono" font-size="11" fill="#1C1E1D">[NODE-04-P3] 王振哲 (2025)</text>
+              <text x="44" y="210" font-family="Noto Sans TC" font-size="11" fill="#525651">萃取失真修正、MTTG 與 GHz VCO</text>
+
+              <!-- Arrows L1 -> L2 -->
+              <line x1="280" y1="81" x2="335" y2="120" stroke="#475C4C" stroke-width="1.5"/>
+              <line x1="280" y1="139" x2="335" y2="139" stroke="#475C4C" stroke-width="1.5"/>
+              <line x1="280" y1="197" x2="335" y2="158" stroke="#475C4C" stroke-width="1.5"/>
+
+              <!-- Layer 2 Box -->
+              <rect x="335" y="45" width="245" height="170" fill="#E4ECE5" stroke="#475C4C" stroke-width="1.5"/>
+              <text x="350" y="70" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#475C4C">LAYER 2 // 跨文獻總對比引擎</text>
+              <text x="350" y="96" font-family="Noto Sans TC" font-size="12" fill="#1C1E1D">• 拓撲演進對齊 (BJT → CMOS Λ)</text>
+              <text x="350" y="120" font-family="Noto Sans TC" font-size="12" fill="#1C1E1D">• 頻段跨度映射 (MHz → 1.075 GHz)</text>
+              <text x="350" y="144" font-family="Noto Sans TC" font-size="12" fill="#1C1E1D">• 6 顆 TSRI 下線晶片編號稽核</text>
+              <text x="350" y="168" font-family="Noto Sans TC" font-size="12" fill="#1C1E1D">• 調變策略演變 (Vgg → W_MN3)</text>
+              <text x="350" y="196" font-family="JetBrains Mono" font-size="10.5" fill="#B84A39">[NODE-04-SYNTHESIS &amp; MATRIX]</text>
+
+              <!-- Arrows L2 -> Outputs -->
+              <line x1="580" y1="105" x2="635" y2="80" stroke="#1C1E1D" stroke-width="1.5"/>
+              <line x1="580" y1="160" x2="635" y2="180" stroke="#1C1E1D" stroke-width="1.5"/>
+
+              <!-- Outputs -->
+              <rect x="635" y="38" width="225" height="80" fill="#FAF8F4" stroke="#1C1E1D" stroke-width="1.5"/>
+              <text x="648" y="60" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#475C4C">OUTPUT // 第 2 項</text>
+              <text x="648" y="80" font-family="Noto Sans TC" font-size="12.5" font-weight="700" fill="#1C1E1D">GitHub LLM Wiki 網頁</text>
+              <text x="648" y="100" font-family="JetBrains Mono" font-size="10.5" fill="#525651">index.html (可檢索知識庫)</text>
+
+              <rect x="635" y="140" width="225" height="80" fill="#FAF8F4" stroke="#1C1E1D" stroke-width="1.5"/>
+              <text x="648" y="162" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#475C4C">OUTPUT // 第 3 項</text>
+              <text x="648" y="182" font-family="Noto Sans TC" font-size="12.5" font-weight="700" fill="#1C1E1D">教學互動式 HTML 簡報</text>
+              <text x="648" y="202" font-family="JetBrains Mono" font-size="10.5" fill="#525651">ndr-teaching-slides.html</text>
+            </svg>
+          </div>
+
+          <!-- Tab 2: Item 5 Audit Log -->
+          <div id="tab-audit" class="link-panel">
+            <p style="font-size:13.5px; color:var(--ink-secondary); margin-bottom:16px;">
+              對應<strong>第 5 項（執行稽核紀錄）</strong>：追蹤三份原始論文（94 頁、157 頁、113 頁）之章節解析、晶片編號核對與關鍵數據真確性狀態。
+            </p>
+            <div class="table-wrap">
+              <table class="editorial-table">
+                <thead>
+                  <tr>
+                    <th>稽核節點 ID</th>
+                    <th>Raw Source 檔案</th>
+                    <th>解析頁數與附錄範圍</th>
+                    <th>核實之晶片編號 / 關鍵參數</th>
+                    <th>稽核狀態</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>AUDIT-2021-01</code></td>
+                    <td>郭峻偉 (2021) 碩士論文 (94 頁)</td>
+                    <td>摘要、第 2–6 章、附錄一 (p.87)</td>
+                    <td><code>T18-108D-E0012</code>；VCO 頻率 3.375–5 MHz / 2.871–8.531 MHz / 1.948→1.138 MHz</td>
+                    <td><span class="badge-sage">VERIFIED</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>AUDIT-2023-02</code></td>
+                    <td>楊鎮瑜 (2023) 碩士論文 (157 頁)</td>
+                    <td>摘要、第 2–8 章、附錄一 (p.151–152)</td>
+                    <td><code>T18-111B-E0006</code>、<code>T18-111D-E0040</code>；6 階多值記憶器、S-NDR 混沌電路</td>
+                    <td><span class="badge-sage">VERIFIED</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>AUDIT-2025-03</code></td>
+                    <td>王振哲 (2025) 碩士論文 (113 頁)</td>
+                    <td>摘要、第 2–8 章、附錄一 (p.106–108)</td>
+                    <td><code>T18-111D-E0060</code>、<code>T18-112D-E0013</code>、<code>T18-112D-E0039</code>；$I_P &gt; 0.9	ext{ mA}$ 失真閾值、Ring VCO 380–1075 MHz</td>
+                    <td><span class="badge-sage">VERIFIED</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tab 3: Item 6 Node Reflection -->
+          <div id="tab-reflection" class="link-panel">
+            <p style="font-size:13.5px; color:var(--ink-secondary); margin-bottom:16px;">
+              對應<strong>第 6 項（節點反思報告）</strong>：記錄 LLM 在自動萃取電路論文時容易混淆的物理與拓撲細節，以及透過 Human-in-the-Loop 校正後的技術結論。
+            </p>
+            <div class="reflection-grid">
+              <div class="reflection-card">
+                <span class="badge-red">REFLECTION-01 // 物理機制辨析</span>
+                <h4>LC VCO 正向調變 vs. 負向調變的拓撲差異</h4>
+                <p>
+                  初版摘要易將郭峻偉（2021）的兩組 MOS-NDR VCO 混為一談。經人工核對第 5 章後明確區分：架構 1 與架構 2 改變了 LC 諧振腔與 NDR 元件的串並聯連接組態，使控制電壓 $0.5\sim 6	ext{ V}$ 上升時，架構 1 頻率上升（2.871→8.531 MHz），架構 2 頻率反而下降（1.948→1.138 MHz）。
+                </p>
+              </div>
+              <div class="reflection-card">
+                <span class="badge-red">REFLECTION-02 // 下線量測失真校正</span>
+                <h4>峰值電流 $I_P &gt; 0.9	ext{ mA}$ 的矽晶片非理想效應</h4>
+                <p>
+                  王振哲（2025）在晶片 <code>T18-111D-E0060</code> 實測中發現，當 Λ 型 MOS-NDR 峰值電流超過約 0.9 mA 時，負微分電阻後段會出現明顯波型失真。反思節點特別標註：實務設計不應盲目加大寬度追求高電流，而須適度增加通道長度 $L$（0.22/0.26 µm）以維持負阻線性度。
+                </p>
+              </div>
+              <div class="reflection-card">
+                <span class="badge-sage">REFLECTION-03 // 製程容忍度演進</span>
+                <h4>從「精密調整 $V_{GG}$」轉向「調變 $W_{MN3}$ 寬度」</h4>
+                <p>
+                  早期 MOBILE 電路依賴外部偏壓 $V_{GG}$ 微調峰值電流，量測時極易受電源供應器誤差影響。2025 年論文改以固定 $V_{GG}=1.4	ext{ V}$ 並透過版圖尺寸 $W_{MN3}$ 決定權重比（如 MTTG 的 1:1:2），使 50 MHz D-FF 可容忍 $1.3\sim 1.4	ext{ V}$ 電源變動。
+                </p>
+              </div>
+              <div class="reflection-card">
+                <span class="badge-sage">REFLECTION-04 // 跨世代頻段躍升</span>
+                <h4>從 MHz 變容二極體受限到 1.075 GHz 直流偏壓環形 VCO</h4>
+                <p>
+                  2021 年 LC VCO 受限於外部變容二極體（1SV149）電容範圍，頻率停留在 MHz 級；2025 年將 MOBILE 反相器之脈衝時脈改為直流偏壓 $V_{bias}$ 並三級串接成環形 VCO，一舉將振盪頻率推進至 380–1075 MHz（GHz 頻段）。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div id="toast" class="toast">已複製完整 GitHub LLM Wiki HTML 原始碼至剪貼簿！</div>
+
+  <script>
+    const topoData = {
+      lambda: {
+        badge: 'VOLTAGE-CONTROLLED // Λ-TYPE',
+        title: 'Λ 型 MOS-NDR（三顆 NMOS 架構）',
+        desc: '由 MN1、MN2 與 MN3 三顆 NMOS 構成，無需電阻即可在標準 CMOS 製程實現。當輸入電壓超過峰值電壓 Vp 後，回授電晶體導通使電流隨電壓上升而驟降至近乎零（谷底電流 Iv ≈ 0），具備極高之峰谷電流比（PVCR）。',
+        params: [
+          ['組成元件', '3 顆 NMOS（MN1, MN2, MN3）+ 偏壓 Vgg'],
+          ['關鍵調變參數', 'W_MN3 決定峰值電流 Ip；通道長度 L 抑制大電流失真'],
+          ['下線失真警戒線', '實測 Ip > 0.9 mA 時後段負阻區易失真（王振哲 2025）'],
+          ['主要應用場景', 'MOBILE 邏輯閘、管線式全加法器、50 MHz D-FF、GHz 環形 VCO、MTTG']
+        ],
+        path: 'M 48 210 Q 105 45, 145 55 C 185 65, 225 195, 265 202 L 410 205',
+        zone: { x: 145, w: 120, label: 'NDR REGION (dI/dV < 0)' },
+        peak: { cx: 145, cy: 55, text: 'Peak (Vp, Ip)' },
+        valley: { cx: 265, cy: 202, text: 'Valley (Vv ≈ 0)' },
+        axes: ['V (V)', 'I (mA)']
+      },
+      ntype: {
+        badge: 'VOLTAGE-CONTROLLED // N-TYPE',
+        title: 'N 型 MOS-NDR（5 NMOS 或 3N1P 架構）',
+        desc: '在 Λ 型架構基礎上增加並聯電流路徑（如 5 顆 NMOS 或 3 NMOS + 1 PMOS），使電壓超過谷底電壓 Vv 後電流隨電壓再度攀升，形成完整的「N 字型」雙穩態負載特性，極適合多顆串聯產生多峰值 I-V 曲線。',
+        params: [
+          ['組成元件', '5 顆 NMOS（郭峻偉 2021）或 3 NMOS + 1 PMOS（楊鎮瑜 2023）'],
+          ['關鍵調變參數', '各分支電晶體寬長比與偏壓 Vgg 控制峰谷電位差'],
+          ['電路拓撲優勢', '五組 N-NDR 串聯可直接摺疊出五個電流峰值'],
+          ['主要應用場景', '六階多值記憶器（T18-111B-E0006）、LC 壓控振盪器']
+        ],
+        path: 'M 48 210 Q 105 55, 145 65 C 185 75, 215 170, 255 172 Q 315 174, 395 45',
+        zone: { x: 145, w: 110, label: 'N-TYPE NDR ZONE' },
+        peak: { cx: 145, cy: 65, text: 'Peak (Vp, Ip)' },
+        valley: { cx: 255, cy: 172, text: 'Valley (Vv, Iv)' },
+        axes: ['V (V)', 'I (mA)']
+      },
+      stype: {
+        badge: 'CURRENT-CONTROLLED // S-TYPE',
+        title: 'S 型 BJT-NDR（PNP + NPN + 三電阻架構）',
+        desc: '由一顆 PNP 與一顆 NPN 雙極性電晶體搭配三顆電阻構成（分 Type-1 與 Type-2），屬於「電流控制型」負微分電阻，在 I-V 曲線上呈現 S 型折返，並聯電容後可利用輸入電流 Is 線性調變振盪頻率，或結合電感仿效 Chua 氏混沌電路。',
+        params: [
+          ['組成元件', 'PNP BJT + NPN BJT + 3 顆電阻（Type-1 / Type-2）'],
+          ['關鍵調變參數', '輸入偏壓電流 Is（1 mA ~ 2.4 mA）與外部電阻值'],
+          ['動態行為特性', '具備電流控制負阻區，可補償寄生電阻損耗'],
+          ['主要應用場景', '電流控制振盪器、Chua 氏混沌振盪器（週期倍增與混沌吸引子）']
+        ],
+        path: 'M 48 210 Q 260 185, 275 155 C 290 125, 155 105, 165 75 Q 175 45, 380 35',
+        zone: { x: 165, w: 110, label: 'S-TYPE NDR (dV/dI < 0)' },
+        peak: { cx: 275, cy: 155, text: 'Turn-back Point' },
+        valley: { cx: 165, cy: 75, text: 'Holding Point' },
+        axes: ['V (V)', 'I (mA)']
+      }
+    };
+
+    function selectTopo(key, btn) {
+      document.querySelectorAll('.topo-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const d = topoData[key];
+      document.getElementById('ivPath').setAttribute('d', d.path);
+      document.getElementById('ndrZone').setAttribute('x', d.zone.x);
+      document.getElementById('ndrZone').setAttribute('width', d.zone.w);
+      document.getElementById('ndrZoneLabel').setAttribute('x', d.zone.x + 10);
+      document.getElementById('ndrZoneLabel').textContent = d.zone.label;
+      document.getElementById('peakDot').setAttribute('cx', d.peak.cx);
+      document.getElementById('peakDot').setAttribute('cy', d.peak.cy);
+      document.getElementById('peakText').setAttribute('x', d.peak.cx - 25);
+      document.getElementById('peakText').setAttribute('y', d.peak.cy - 12);
+      document.getElementById('peakText').textContent = d.peak.text;
+      document.getElementById('valleyDot').setAttribute('cx', d.valley.cx);
+      document.getElementById('valleyDot').setAttribute('cy', d.valley.cy);
+      document.getElementById('valleyText').setAttribute('x', d.valley.cx + 8);
+      document.getElementById('valleyText').setAttribute('y', d.valley.cy - 6);
+      document.getElementById('valleyText').textContent = d.valley.text;
+
+      let listHtml = d.params.map(p => `<li><strong>${p[0]}</strong><span>${p[1]}</span></li>`).join('');
+      document.getElementById('topoDetails').innerHTML = `
+        <span class="badge-sage">${d.badge}</span>
+        <h3 style="margin-top:10px;">${d.title}</h3>
+        <p style="font-size:13.5px; color:var(--ink-secondary); margin-top:8px;">${d.desc}</p>
+        <ul class="param-list">${listHtml}</ul>
+      `;
+    }
+
+    let currentTag = 'all';
+    function setFilter(tag, btn) {
+      currentTag = tag;
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      filterArticles();
+    }
+
+    function filterArticles() {
+      const q = document.getElementById('wikiSearch').value.toLowerCase();
+      document.querySelectorAll('.wiki-article').forEach(art => {
+        const tags = art.getAttribute('data-tags') || '';
+        const text = art.innerText.toLowerCase();
+        const matchTag = currentTag === 'all' || tags.includes(currentTag);
+        const matchQuery = !q || text.includes(q);
+        art.style.display = (matchTag && matchQuery) ? 'block' : 'none';
+      });
+    }
+
+    function switchLinkTab(tabId, btn) {
+      document.querySelectorAll('.link-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.link-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function copyGitHubSource() {
+      const fullHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      navigator.clipboard.writeText(fullHtml).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2800);
+      });
+    }
+  </script>
+</body>
+</html>
+Separating the combined slide deck files into distinct assignments
